@@ -1,0 +1,16 @@
+{
+  // Type-check without emitting, resolving @a11y-tree/core from source so this
+  // package can be type-checked without building core first. The build
+  // (tsconfig.json) instead resolves core from its published types in dist.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "noEmit": true,
+    "paths": {
+      "@a11y-tree/core": ["../core/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

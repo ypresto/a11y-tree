@@ -1,0 +1,56 @@
+{
+  "name": "@a11y-tree/core",
+  "version": "0.1.0",
+  "description": "Playwright-compatible accessibility tree for the live DOM — snapshot it, reference it, drive it (click/type/fill).",
+  "author": "ypresto <yuya.presto@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ypresto/a11y-tree.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/ypresto/a11y-tree/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/ypresto/a11y-tree/issues"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "a11y-tree",
+    "aria",
+    "aria-snapshot",
+    "accessibility-tree",
+    "playwright",
+    "dom",
+    "automation",
+    "agent",
+    "mcp"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
