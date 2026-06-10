@@ -1,0 +1,10 @@
+a11y-tree
+Copyright 2026 Yuya Tanaka (ypresto)
+
+This product includes software developed at Microsoft Corporation.
+
+Portions of the `a11y-tree` package (files under
+packages/core/src/playwright/, and their compiled output in dist/) are derived
+from the Playwright project (https://github.com/microsoft/playwright),
+Copyright (c) Microsoft Corporation, licensed under the Apache License, 2.0.
+The original copyright and license headers are retained in those files.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Playwright-compatible accessibility tree for the live DOM — snapshot it, reference it, drive it (click/type/fill).",
   "author": "ypresto <yuya.presto@gmail.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/ypresto/a11y-tree.git",
@@ -37,7 +37,7 @@
   },
   "files": [
     "dist",
-    "THIRD-PARTY-NOTICES.md"
+    "NOTICE"
   ],
   "sideEffects": false,
   "publishConfig": {
@@ -48,7 +48,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist *.tsbuildinfo"
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "prepack": "cp ../../README.md README.md",
+    "postpack": "rm -f README.md"
   },
   "engines": {
     "node": ">=18.0.0"

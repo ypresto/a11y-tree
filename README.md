@@ -17,8 +17,8 @@ Playwright-MCP "aria snapshot" format your agents already understand.
 
 | Package | Description | Deps |
 | --- | --- | --- |
-| [`a11y-tree`](packages/core) | The accessibility tree: snapshot + ref management + ref-based operations (click/type/fill). | none |
-| [`@a11y-tree/ai-sdk`](packages/ai-sdk) | Vercel AI SDK tools that drive the current page via `a11y-tree`. | `a11y-tree`, peer `ai`/`zod` |
+| [`a11y-tree`](https://github.com/ypresto/a11y-tree/tree/main/packages/core) | The accessibility tree: snapshot + ref management + ref-based operations (click/type/fill). | none |
+| [`@a11y-tree/ai-sdk`](https://github.com/ypresto/a11y-tree/tree/main/packages/ai-sdk) | Vercel AI SDK tools that drive the current page via `a11y-tree`. | `a11y-tree`, peer `ai`/`zod` |
 
 ```sh
 pnpm add a11y-tree            # just the accessibility tree
@@ -165,6 +165,8 @@ pnpm typecheck
 
 ## License
 
-MIT. Portions of `a11y-tree` under `packages/core/src/playwright/` are derived from
-Playwright and licensed under Apache-2.0 — see
-[packages/core/THIRD-PARTY-NOTICES.md](packages/core/THIRD-PARTY-NOTICES.md).
+[Apache-2.0](https://github.com/ypresto/a11y-tree/blob/main/LICENSE). Portions of
+`a11y-tree` under `packages/core/src/playwright/` are derived from
+[Playwright](https://github.com/microsoft/playwright) (Copyright Microsoft
+Corporation), also Apache-2.0; see
+[NOTICE](https://github.com/ypresto/a11y-tree/blob/main/NOTICE).

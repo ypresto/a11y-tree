@@ -4,7 +4,7 @@
   "private": true,
   "description": "Monorepo for @a11y-tree/core and @a11y-tree/ai-sdk",
   "author": "ypresto <yuya.presto@gmail.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/ypresto/a11y-tree",
   "repository": {
     "type": "git",

@@ -6,6 +6,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Ephemeral README copied into the core package at pack time (prepack/postpack)
+/packages/core/README.md
+
 # Test coverage
 coverage/
 
