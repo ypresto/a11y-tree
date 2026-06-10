@@ -1,7 +1,7 @@
 {
   "name": "@a11y-tree/ai-sdk",
   "version": "0.1.0",
-  "description": "Vercel AI SDK tools that drive the current page's live DOM via @a11y-tree/core — for in-browser conversation agents.",
+  "description": "Vercel AI SDK tools that drive the current page's live DOM via a11y-tree — for in-browser conversation agents.",
   "author": "ypresto <yuya.presto@gmail.com>",
   "license": "MIT",
   "repository": {
@@ -50,7 +50,7 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@a11y-tree/core": "workspace:*"
+    "a11y-tree": "workspace:*"
   },
   "peerDependencies": {
     "ai": "^5.0.0",

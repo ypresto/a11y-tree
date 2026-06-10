@@ -26,7 +26,7 @@ importers:
 
   packages/ai-sdk:
     dependencies:
-      '@a11y-tree/core':
+      a11y-tree:
         specifier: workspace:*
         version: link:../core
     devDependencies:

@@ -1,7 +1,7 @@
 # @a11y-tree/ai-sdk
 
 Vercel AI SDK tools for an **in-browser conversation agent**, built on
-[`@a11y-tree/core`](../core). The tools run on the page the user is already on
+[`a11y-tree`](../core). The tools run on the page the user is already on
 (no server, no tabs, no `navigate`) and act on the live DOM. Tool names and schemas
 mirror Playwright-MCP so models recognize them, and every action returns the fresh
 page snapshot to drive the agent loop.
@@ -55,7 +55,7 @@ With `@ai-sdk/react`'s `useChat`, wire these into your client-side tool executio
 
 `createA11yTreeTools(options?)`:
 
-- `controller` — a `DomController` from `@a11y-tree/core` to drive. Defaults to
+- `controller` — a `DomController` from `a11y-tree` to drive. Defaults to
   `createDomController(root)`.
 - `root` — root element when no controller is given. Defaults to `document.body`.
 - `pageHeader` — prepend the `- Page URL / - Page Title / - Page Snapshot` header

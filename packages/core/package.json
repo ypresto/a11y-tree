@@ -1,5 +1,5 @@
 {
-  "name": "@a11y-tree/core",
+  "name": "a11y-tree",
   "version": "0.1.0",
   "description": "Playwright-compatible accessibility tree for the live DOM — snapshot it, reference it, drive it (click/type/fill).",
   "author": "ypresto <yuya.presto@gmail.com>",

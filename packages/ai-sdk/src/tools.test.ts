@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createA11yTreeTools } from './tools.js';
-import { createDomController } from '@a11y-tree/core';
+import { createDomController } from 'a11y-tree';
 
 // AI SDK passes a second options argument to execute(); we don't use it.
 const OPTS = { toolCallId: 'test', messages: [] } as never;

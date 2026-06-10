@@ -1,4 +1,4 @@
-# @a11y-tree/core
+# a11y-tree
 
 **Playwright-compatible accessibility tree for the live DOM — snapshot it, reference it, drive it.**
 
@@ -19,7 +19,7 @@ Zero runtime dependencies. For Vercel AI SDK tools built on top of this, see
 ## Install
 
 ```sh
-pnpm add @a11y-tree/core
+pnpm add a11y-tree
 ```
 
 This package runs in the browser (it walks the live DOM). Use it in a content
@@ -32,7 +32,7 @@ The package is organized as three independent layers plus a convenience controll
 ### 1. Accessibility tree — `snapshot`
 
 ```ts
-import { snapshot, pageSnapshot } from '@a11y-tree/core';
+import { snapshot, pageSnapshot } from 'a11y-tree';
 
 const { yaml, elements } = snapshot(document.body);
 // yaml:
@@ -50,7 +50,7 @@ Each interactable element gets a stable ref (`e3`). The ref store keeps the late
 snapshot's `ref -> Element` map and resolves refs back to live elements.
 
 ```ts
-import { createRefStore } from '@a11y-tree/core';
+import { createRefStore } from 'a11y-tree';
 
 const store = createRefStore();
 store.refresh();                 // take a snapshot, remember its refs
@@ -63,7 +63,7 @@ Pure helpers that perform one interaction on an element by dispatching synthetic
 events. They take an `Element`, never a ref.
 
 ```ts
-import { click, type, fill, selectOption, hover } from '@a11y-tree/core';
+import { click, type, fill, selectOption, hover } from 'a11y-tree';
 
 click(el);
 await type(el, 'hello', { submit: true });
@@ -78,7 +78,7 @@ Ties layers 2 + 3 so you can drive the page with ref strings. On a ref miss it
 re-snapshots once before failing (the Playwright-MCP "snapshot then act" loop).
 
 ```ts
-import { createDomController } from '@a11y-tree/core';
+import { createDomController } from 'a11y-tree';
 
 const dom = createDomController();
 const { yaml } = dom.snapshot();   // feed `yaml` to your agent
@@ -92,7 +92,7 @@ dom.fillForm([{ ref: 'e4', value: 'user@example.com' }]);
 ## Is this AOM?
 
 No. The **Accessibility Object Model (AOM)** is a draft browser API that would
-expose the browser's *own* computed accessibility tree to JavaScript. `@a11y-tree/core`
+expose the browser's *own* computed accessibility tree to JavaScript. `a11y-tree`
 instead **re-computes** the accessibility tree itself in JS by applying the ARIA 1.2
 role and accessible-name algorithms to the DOM (this is Playwright's approach). It is
 a *representation of an accessibility tree*, but not a read-out of the browser's AOM —

@@ -16,7 +16,7 @@
 
 import { tool } from 'ai';
 import { z } from 'zod';
-import { createDomController, type DomController } from '@a11y-tree/core';
+import { createDomController, type DomController } from 'a11y-tree';
 
 /** A mutating action about to run, surfaced to {@link A11yTreeToolsOptions.onBeforeAction}. */
 export interface ToolAction {
