@@ -1,11 +1,12 @@
 {
+  // Type-checking only — the build is done by tsdown (see tsdown.config.ts).
+  // tsc never emits here, so there is no rootDir/outDir and tests are included.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
     "types": ["node"],
-    "outDir": "dist",
-    "rootDir": "src"
+    "noEmit": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+  "exclude": ["node_modules", "dist"]
 }

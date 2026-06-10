@@ -1,11 +1,17 @@
 {
+  // Type-checking only — the build is done by tsdown (see tsdown.config.ts).
+  // tsc never emits, so tests are included. `paths` resolves the a11y-tree
+  // (core) package from source, so this package type-checks without building
+  // core first; tsdown keeps a11y-tree external in the actual build.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
     "types": ["node"],
-    "outDir": "dist",
-    "rootDir": "src"
+    "noEmit": true,
+    "paths": {
+      "a11y-tree": ["../core/src/index.ts"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+  "exclude": ["node_modules", "dist"]
 }
