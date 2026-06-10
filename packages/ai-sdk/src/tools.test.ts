@@ -1,9 +1,23 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { type ToolExecuteFunction } from 'ai';
 import { createA11yTreeTools } from './tools.js';
 import { createA11yTreeHandle } from 'a11y-tree';
 
 // AI SDK passes a second options argument to execute(); we don't use it.
 const OPTS = { toolCallId: 'test', messages: [] } as never;
+
+function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
+  return value != null && typeof value === 'object' && Symbol.asyncIterator in value;
+}
+
+// `execute` may, per the AI SDK type, return an AsyncIterable for streaming
+// tools; ours always resolve to a plain result object. Narrow to that so the
+// returned value is usable without a cast.
+async function call<I, O>(execute: ToolExecuteFunction<I, O> | undefined, input: I): Promise<O> {
+  const out = await execute!(input, OPTS);
+  if (isAsyncIterable(out)) throw new Error('unexpected streaming tool result in test');
+  return out;
+}
 
 function refOf(elements: Map<string, Element>, element: Element): string {
   for (const [ref, el] of elements) {
@@ -38,7 +52,7 @@ describe('createA11yTreeTools', () => {
     document.body.innerHTML = `<button>Go</button>`;
     const tools = createA11yTreeTools();
 
-    const result = await tools.browser_snapshot.execute!({}, OPTS);
+    const result = await call(tools.browser_snapshot.execute, {});
 
     expect(result.snapshot).toContain('- Page URL:');
     expect(result.snapshot).toContain('button "Go"');
@@ -55,7 +69,7 @@ describe('createA11yTreeTools', () => {
     const tools = createA11yTreeTools({ handle });
     const ref = refOf(handle.snapshot().elements, button);
 
-    const result = await tools.browser_click.execute!({ element: 'Go button', ref }, OPTS);
+    const result = await call(tools.browser_click.execute, { element: 'Go button', ref });
 
     expect(clicks).toBe(1);
     expect(result.success).toBe(true);
@@ -69,7 +83,7 @@ describe('createA11yTreeTools', () => {
     const tools = createA11yTreeTools({ handle });
     const ref = refOf(handle.snapshot().elements, input);
 
-    await tools.browser_type.execute!({ element: 'Email field', ref, text: 'a@b.co' }, OPTS);
+    await call(tools.browser_type.execute, { element: 'Email field', ref, text: 'a@b.co' });
 
     expect(input.value).toBe('a@b.co');
   });
@@ -83,15 +97,12 @@ describe('createA11yTreeTools', () => {
     const tools = createA11yTreeTools({ handle });
     const elements = handle.snapshot().elements;
 
-    await tools.browser_fill_form.execute!(
-      {
-        fields: [
-          { element: 'First', ref: refOf(elements, first!), value: 'Ada' },
-          { element: 'Last', ref: refOf(elements, last!), value: 'Lovelace' },
-        ],
-      },
-      OPTS,
-    );
+    await call(tools.browser_fill_form.execute, {
+      fields: [
+        { element: 'First', ref: refOf(elements, first!), value: 'Ada' },
+        { element: 'Last', ref: refOf(elements, last!), value: 'Lovelace' },
+      ],
+    });
 
     expect(first!.value).toBe('Ada');
     expect(last!.value).toBe('Lovelace');
@@ -115,7 +126,7 @@ describe('createA11yTreeTools', () => {
     const ref = refOf(handle.snapshot().elements, button);
 
     await expect(
-      tools.browser_click.execute!({ element: 'Go button', ref }, OPTS),
+      call(tools.browser_click.execute, { element: 'Go button', ref }),
     ).rejects.toThrow(/denied by user/);
     expect(seen).toEqual(['click']);
     expect(clicks).toBe(0);

@@ -1,0 +1,11 @@
+{
+  // Type-check the whole package, tests included (the build config excludes
+  // tests so they are not emitted to dist). Tests are run by vitest, but we
+  // still want tsc to catch type errors in them.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
