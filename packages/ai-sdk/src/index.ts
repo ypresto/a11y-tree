@@ -4,5 +4,5 @@
  * Requires the optional peer dependencies `ai` (v5) and `zod`.
  */
 
-export { createA11yTreeTools } from './tools.js';
+export { createA11yTreeTools, createA11yTreeToolSchemas } from './tools.js';
 export type { A11yTreeToolsOptions, ToolAction } from './tools.js';

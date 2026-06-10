@@ -12,10 +12,12 @@
   },
   "type": "module",
   "scripts": {
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
-    "clean": "pnpm -r clean"
+    "build": "pnpm --filter \"./packages/*\" run build",
+    "test": "pnpm --filter \"./packages/*\" run test",
+    "typecheck": "pnpm --filter \"./packages/*\" run typecheck",
+    "clean": "pnpm --filter \"./packages/*\" run clean",
+    "example:dev": "pnpm --filter a11y-tree-example dev",
+    "example:build": "pnpm --filter a11y-tree-example build"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

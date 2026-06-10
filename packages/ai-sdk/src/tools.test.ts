@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { type ToolExecuteFunction } from 'ai';
-import { createA11yTreeTools } from './tools.js';
+import { createA11yTreeTools, createA11yTreeToolSchemas } from './tools.js';
 import { createA11yTreeHandle } from 'a11y-tree';
 
 // AI SDK passes a second options argument to execute(); we don't use it.
@@ -46,6 +46,16 @@ describe('createA11yTreeTools', () => {
     ]) {
       expect(tools[name as keyof typeof tools]).toBeDefined();
     }
+  });
+
+  it('exposes the same tool set as schemas-only, without execute (server-safe)', () => {
+    const schemas = createA11yTreeToolSchemas();
+    const tools = createA11yTreeTools();
+    expect(Object.keys(schemas).sort()).toEqual(Object.keys(tools).sort());
+    // Schema tools carry the model-facing definition but no executor.
+    expect(schemas.browser_click.description).toBe(tools.browser_click.description);
+    expect(schemas.browser_click.execute).toBeUndefined();
+    expect(tools.browser_click.execute).toBeDefined();
   });
 
   it('browser_snapshot returns the page header and refs', async () => {

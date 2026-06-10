@@ -133,14 +133,49 @@ const tools = createA11yTreeTools({
 });
 ```
 
-With `@ai-sdk/react`'s `useChat`, wire these into your client-side tool execution
-(e.g. `onToolCall`) so the model drives the page the user is viewing.
+The snippet above runs the whole loop in one place. For a real chat app, the model
+runs on your **server** (with your API key) but the tools must run in the **browser**
+(they touch `document`). Split it:
+
+- **Server** — give `streamText` the tool *schemas* (`createA11yTreeToolSchemas()`,
+  no `execute`, safe to import in a Node route) so tool calls stream to the client
+  instead of running on the server.
+- **Client** — run the tools against the live DOM in `@ai-sdk/react`'s `useChat`
+  `onToolCall` (via `createA11yTreeTools()`), returning each result with
+  `addToolResult`; `sendAutomaticallyWhen` continues the loop.
+
+```ts
+// server: app/api/chat/route.ts
+import { streamText, convertToModelMessages, stepCountIs } from 'ai';
+import { createA11yTreeToolSchemas } from '@a11y-tree/ai-sdk';
+
+const result = streamText({
+  model,
+  messages: convertToModelMessages(messages),
+  tools: createA11yTreeToolSchemas(),   // schemas only → client-side tools
+  stopWhen: stepCountIs(20),
+});
+```
+
+```ts
+// client: useChat onToolCall
+const tools = createA11yTreeTools();    // runs in the browser, on the live DOM
+useChat({
+  sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+  async onToolCall({ toolCall }) {
+    const output = await tools[toolCall.toolName].execute(toolCall.input, opts);
+    addToolResult({ tool: toolCall.toolName, toolCallId: toolCall.toolCallId, output });
+  },
+});
+```
+
+See [`example/`](example) for a complete, runnable Next.js app of exactly this.
 
 **Tools:** `browser_snapshot`, `browser_click`, `browser_type`, `browser_fill_form`,
 `browser_select_option`, `browser_hover`, `browser_drag`, `browser_press_key`,
 `browser_wait_for`.
 
-**`createA11yTreeTools(options?)`:**
+**`createA11yTreeTools(options?)`** (browser; tools have `execute`):
 
 - `handle` — an `A11yTreeHandle` from `a11y-tree` to drive. Defaults to
   `createA11yTreeHandle(root)`.
@@ -148,6 +183,9 @@ With `@ai-sdk/react`'s `useChat`, wire these into your client-side tool executio
 - `pageHeader` — prepend the `- Page URL / - Page Title / - Page Snapshot` header
   to snapshots. Default `true`.
 - `onBeforeAction(action)` — called before every mutating tool; throw to cancel.
+
+**`createA11yTreeToolSchemas()`** (server; same tools, no `execute` / no DOM) —
+pair with `createA11yTreeTools()` on the client.
 
 ## Is this AOM?
 
@@ -162,10 +200,14 @@ so results approximate, and may differ slightly from, what a screen reader sees.
 
 ```sh
 pnpm install
-pnpm build       # build all packages (topological)
+pnpm build       # build the packages (topological)
 pnpm test        # run all tests (real browser via Playwright)
 pnpm typecheck
+pnpm example:dev # run the example Next.js app (needs the packages built first)
 ```
+
+The `build` / `test` / `typecheck` scripts cover the `packages/*` libraries; the
+runnable demo lives in [`example/`](example).
 
 ## License
 
