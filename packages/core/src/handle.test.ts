@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createDomController } from './controller.js';
+import { createA11yTreeHandle } from './handle.js';
 
 function refOf(elements: Map<string, Element>, element: Element): string {
   for (const [ref, el] of elements) {
@@ -8,7 +8,7 @@ function refOf(elements: Map<string, Element>, element: Element): string {
   throw new Error('element not in snapshot');
 }
 
-describe('createDomController', () => {
+describe('createA11yTreeHandle', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
@@ -19,9 +19,9 @@ describe('createDomController', () => {
     let clicks = 0;
     button.addEventListener('click', () => clicks++);
 
-    const dom = createDomController();
-    const ref = refOf(dom.snapshot().elements, button);
-    dom.click(ref);
+    const handle = createA11yTreeHandle();
+    const ref = refOf(handle.snapshot().elements, button);
+    handle.click(ref);
 
     expect(clicks).toBe(1);
   });
@@ -30,17 +30,17 @@ describe('createDomController', () => {
     document.body.innerHTML = `<input aria-label="name" />`;
     const input = document.querySelector('input')!;
 
-    const dom = createDomController();
-    const ref = refOf(dom.snapshot().elements, input);
-    dom.fillForm([{ ref, value: 'Ada' }]);
+    const handle = createA11yTreeHandle();
+    const ref = refOf(handle.snapshot().elements, input);
+    handle.fillForm([{ ref, value: 'Ada' }]);
 
     expect(input.value).toBe('Ada');
   });
 
   it('throws a clear error for an unknown ref', () => {
     document.body.innerHTML = `<button>Go</button>`;
-    const dom = createDomController();
+    const handle = createA11yTreeHandle();
 
-    expect(() => dom.click('e9999')).toThrow(/Element not found: e9999/);
+    expect(() => handle.click('e9999')).toThrow(/Element not found: e9999/);
   });
 });

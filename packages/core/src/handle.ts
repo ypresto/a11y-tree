@@ -1,17 +1,18 @@
 /**
- * Convenience controller.
+ * The a11y-tree handle.
  *
- * Ties Layer 2 (ref management) and Layer 3 (operations) together so callers
- * can drive the page purely with ref strings from the latest snapshot. On a
- * ref miss it re-snapshots once before failing, mirroring Playwright-MCP's
- * "snapshot then act" loop.
+ * The library's primary stateful interface: a durable, page-state-agnostic
+ * handle, rooted at any DOM subtree, that you hold and drive purely with ref
+ * strings from the latest snapshot. It ties Layer 2 (ref management) and
+ * Layer 3 (operations) together; on a ref miss it re-snapshots once before
+ * failing, mirroring Playwright-MCP's "snapshot then act" loop.
  */
 
 import { createRefStore } from './refs.js';
 import type { AccessibilitySnapshot, SnapshotOptions } from './snapshot.js';
 import * as ops from './operations.js';
 
-export interface DomController {
+export interface A11yTreeHandle {
   /** Take a fresh snapshot, refresh the ref store, and return it. */
   snapshot(options?: SnapshotOptions): AccessibilitySnapshot;
   /** Resolve a ref to a live element (re-snapshotting once on a miss). */
@@ -23,14 +24,14 @@ export interface DomController {
   selectOption(ref: string, values: string[]): void;
   hover(ref: string): void;
   drag(fromRef: string, toRef: string): void;
-  /** Press a key on the active element (or the controller root). */
+  /** Press a key on the active element (or the handle's root). */
   pressKey(key: string): void;
 }
 
 /**
- * Create a controller rooted at `root` (default `document.body`).
+ * Create an a11y-tree handle rooted at `root` (default `document.body`).
  */
-export function createDomController(root: Element = document.body): DomController {
+export function createA11yTreeHandle(root: Element = document.body): A11yTreeHandle {
   const store = createRefStore();
 
   const resolve = (ref: string): Element => {

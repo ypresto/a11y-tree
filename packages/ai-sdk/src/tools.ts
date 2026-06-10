@@ -2,8 +2,8 @@
  * Vercel AI SDK tools for the a11y-tree.
  *
  * Unlike a server-side browser-automation bridge, these tools run **in the
- * browser** and act on the **current page's live DOM** through a
- * {@link DomController}. They are meant for a conversation/chat agent that
+ * browser** and act on the **current page's live DOM** through an
+ * {@link A11yTreeHandle}. They are meant for a conversation/chat agent that
  * assists the user inside the page they are already on — so there is no
  * `navigate` or tab management here.
  *
@@ -16,7 +16,7 @@
 
 import { tool } from 'ai';
 import { z } from 'zod';
-import { createDomController, type DomController } from 'a11y-tree';
+import { createA11yTreeHandle, type A11yTreeHandle } from 'a11y-tree';
 
 /** A mutating action about to run, surfaced to {@link A11yTreeToolsOptions.onBeforeAction}. */
 export interface ToolAction {
@@ -31,9 +31,9 @@ export interface ToolAction {
 }
 
 export interface A11yTreeToolsOptions {
-  /** Controller to drive. Defaults to `createDomController(root)`. */
-  controller?: DomController;
-  /** Root element when no controller is provided. Defaults to `document.body`. */
+  /** Handle to drive. Defaults to `createA11yTreeHandle(root)`. */
+  handle?: A11yTreeHandle;
+  /** Root element when no handle is provided. Defaults to `document.body`. */
   root?: Element;
   /**
    * Prepend the `- Page URL / - Page Title / - Page Snapshot` header to
@@ -82,7 +82,7 @@ const refField = z.string().describe('Exact target element reference from the pa
  * @example
  * ```ts
  * import { streamText } from 'ai';
- * import { createA11yTreeTools } from 'a11y-tree/ai';
+ * import { createA11yTreeTools } from '@a11y-tree/ai-sdk';
  *
  * const result = streamText({
  *   model,
@@ -93,12 +93,12 @@ const refField = z.string().describe('Exact target element reference from the pa
  * ```
  */
 export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
-  const controller = options.controller ?? createDomController(options.root);
+  const handle = options.handle ?? createA11yTreeHandle(options.root);
   const pageHeader = options.pageHeader ?? true;
   const onBeforeAction = options.onBeforeAction;
 
   /** Take a fresh snapshot (refreshing refs) and format it for the model. */
-  const freshSnapshot = (): string => formatSnapshot(controller.snapshot().yaml, pageHeader);
+  const freshSnapshot = (): string => formatSnapshot(handle.snapshot().yaml, pageHeader);
 
   const guard = async (action: ToolAction): Promise<void> => {
     if (onBeforeAction) await onBeforeAction(action);
@@ -122,7 +122,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       }),
       execute: async ({ element, ref, doubleClick, button }) => {
         await guard({ name: 'click', element, ref, details: { doubleClick, button } });
-        controller.click(ref, {
+        handle.click(ref, {
           ...(doubleClick !== undefined ? { doubleClick } : {}),
           ...(button !== undefined ? { button } : {}),
         });
@@ -144,7 +144,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       }),
       execute: async ({ element, ref, text, submit, slowly }) => {
         await guard({ name: 'type', element, ref, details: { submit, slowly } });
-        await controller.type(ref, text, {
+        await handle.type(ref, text, {
           ...(submit !== undefined ? { submit } : {}),
           ...(slowly !== undefined ? { slowly } : {}),
         });
@@ -167,7 +167,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       }),
       execute: async ({ fields }) => {
         await guard({ name: 'fillForm', details: { count: fields.length } });
-        controller.fillForm(fields.map((f) => ({ ref: f.ref, value: f.value })));
+        handle.fillForm(fields.map((f) => ({ ref: f.ref, value: f.value })));
         return { success: true, snapshot: freshSnapshot() };
       },
     }),
@@ -181,7 +181,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       }),
       execute: async ({ element, ref, values }) => {
         await guard({ name: 'selectOption', element, ref, details: { values } });
-        controller.selectOption(ref, values);
+        handle.selectOption(ref, values);
         return { success: true, snapshot: freshSnapshot() };
       },
     }),
@@ -191,7 +191,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       inputSchema: z.object({ element: elementField, ref: refField }),
       execute: async ({ element, ref }) => {
         await guard({ name: 'hover', element, ref });
-        controller.hover(ref);
+        handle.hover(ref);
         return { success: true, snapshot: freshSnapshot() };
       },
     }),
@@ -206,7 +206,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       }),
       execute: async ({ startElement, startRef, endElement, endRef }) => {
         await guard({ name: 'drag', element: startElement, ref: startRef, details: { endElement, endRef } });
-        controller.drag(startRef, endRef);
+        handle.drag(startRef, endRef);
         return { success: true, snapshot: freshSnapshot() };
       },
     }),
@@ -218,7 +218,7 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       }),
       execute: async ({ key }) => {
         await guard({ name: 'pressKey', details: { key } });
-        controller.pressKey(key);
+        handle.pressKey(key);
         return { success: true, snapshot: freshSnapshot() };
       },
     }),

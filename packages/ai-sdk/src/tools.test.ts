@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createA11yTreeTools } from './tools.js';
-import { createDomController } from 'a11y-tree';
+import { createA11yTreeHandle } from 'a11y-tree';
 
 // AI SDK passes a second options argument to execute(); we don't use it.
 const OPTS = { toolCallId: 'test', messages: [] } as never;
@@ -51,9 +51,9 @@ describe('createA11yTreeTools', () => {
     let clicks = 0;
     button.addEventListener('click', () => clicks++);
 
-    const controller = createDomController();
-    const tools = createA11yTreeTools({ controller });
-    const ref = refOf(controller.snapshot().elements, button);
+    const handle = createA11yTreeHandle();
+    const tools = createA11yTreeTools({ handle });
+    const ref = refOf(handle.snapshot().elements, button);
 
     const result = await tools.browser_click.execute!({ element: 'Go button', ref }, OPTS);
 
@@ -65,9 +65,9 @@ describe('createA11yTreeTools', () => {
   it('browser_type types into the referenced input', async () => {
     document.body.innerHTML = `<input aria-label="Email" />`;
     const input = document.querySelector('input')!;
-    const controller = createDomController();
-    const tools = createA11yTreeTools({ controller });
-    const ref = refOf(controller.snapshot().elements, input);
+    const handle = createA11yTreeHandle();
+    const tools = createA11yTreeTools({ handle });
+    const ref = refOf(handle.snapshot().elements, input);
 
     await tools.browser_type.execute!({ element: 'Email field', ref, text: 'a@b.co' }, OPTS);
 
@@ -79,9 +79,9 @@ describe('createA11yTreeTools', () => {
       <input aria-label="First" />
       <input aria-label="Last" />`;
     const [first, last] = Array.from(document.querySelectorAll('input'));
-    const controller = createDomController();
-    const tools = createA11yTreeTools({ controller });
-    const elements = controller.snapshot().elements;
+    const handle = createA11yTreeHandle();
+    const tools = createA11yTreeTools({ handle });
+    const elements = handle.snapshot().elements;
 
     await tools.browser_fill_form.execute!(
       {
@@ -104,15 +104,15 @@ describe('createA11yTreeTools', () => {
     button.addEventListener('click', () => clicks++);
 
     const seen: string[] = [];
-    const controller = createDomController();
+    const handle = createA11yTreeHandle();
     const tools = createA11yTreeTools({
-      controller,
+      handle,
       onBeforeAction: (action) => {
         seen.push(action.name);
         if (action.name === 'click') throw new Error('denied by user');
       },
     });
-    const ref = refOf(controller.snapshot().elements, button);
+    const ref = refOf(handle.snapshot().elements, button);
 
     await expect(
       tools.browser_click.execute!({ element: 'Go button', ref }, OPTS),

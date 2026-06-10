@@ -72,21 +72,23 @@ selectOption(el, ['option-b']);
 hover(el);
 ```
 
-### Putting it together — `createDomController`
+### Putting it together — `createA11yTreeHandle`
 
-Ties layers 2 + 3 so you can drive the page with ref strings. On a ref miss it
-re-snapshots once before failing (the Playwright-MCP "snapshot then act" loop).
+The library's primary stateful interface: a durable, page-state-agnostic handle,
+rooted at any DOM subtree, that ties layers 2 + 3 so you can drive the page with
+ref strings. On a ref miss it re-snapshots once before failing (the Playwright-MCP
+"snapshot then act" loop).
 
 ```ts
-import { createDomController } from 'a11y-tree';
+import { createA11yTreeHandle } from 'a11y-tree';
 
-const dom = createDomController();
-const { yaml } = dom.snapshot();   // feed `yaml` to your agent
+const handle = createA11yTreeHandle();   // optional root, defaults to document.body
+const { yaml } = handle.snapshot();      // feed `yaml` to your agent
 
 // agent replies with refs from the snapshot:
-dom.click('e3');
-await dom.type('e4', 'user@example.com');
-dom.fillForm([{ ref: 'e4', value: 'user@example.com' }]);
+handle.click('e3');
+await handle.type('e4', 'user@example.com');
+handle.fillForm([{ ref: 'e4', value: 'user@example.com' }]);
 ```
 
 ## Is this AOM?

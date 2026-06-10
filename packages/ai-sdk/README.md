@@ -55,9 +55,9 @@ With `@ai-sdk/react`'s `useChat`, wire these into your client-side tool executio
 
 `createA11yTreeTools(options?)`:
 
-- `controller` — a `DomController` from `a11y-tree` to drive. Defaults to
-  `createDomController(root)`.
-- `root` — root element when no controller is given. Defaults to `document.body`.
+- `handle` — an `A11yTreeHandle` from `a11y-tree` to drive. Defaults to
+  `createA11yTreeHandle(root)`.
+- `root` — root element when no handle is given. Defaults to `document.body`.
 - `pageHeader` — prepend the `- Page URL / - Page Title / - Page Snapshot` header
   to snapshots. Default `true`.
 - `onBeforeAction(action)` — called before every mutating tool; throw to cancel.

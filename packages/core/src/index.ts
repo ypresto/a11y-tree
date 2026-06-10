@@ -8,7 +8,8 @@
  *   2. refs          — map refs (`e3`) back to live elements
  *   3. operations    — click/type/fill/... on an element
  *
- * Plus `createDomController()` which ties layers 2 and 3 together.
+ * Plus `createA11yTreeHandle()` — the primary stateful handle that ties
+ * layers 2 and 3 together.
  */
 
 // Layer 1 — accessibility tree
@@ -36,6 +37,6 @@ export {
 } from './operations.js';
 export type { ClickOptions, TypeOptions } from './operations.js';
 
-// Convenience controller (ties layers 2 + 3)
-export { createDomController } from './controller.js';
-export type { DomController } from './controller.js';
+// Primary stateful handle (ties layers 2 + 3)
+export { createA11yTreeHandle } from './handle.js';
+export type { A11yTreeHandle } from './handle.js';
