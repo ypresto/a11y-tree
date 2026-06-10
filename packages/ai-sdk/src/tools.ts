@@ -9,7 +9,9 @@
  *
  * Tool names and schemas mirror Playwright-MCP (`browser_snapshot`,
  * `browser_click`, …) so models recognize them, and every mutating tool
- * returns the fresh page snapshot afterwards to drive the agent loop.
+ * returns the fresh page snapshot afterwards to drive the agent loop — as a
+ * diff against the previous snapshot, so only what changed is sent back.
+ * `browser_snapshot` itself always returns the full tree.
  *
  * Requires the optional peer dependencies `ai` (v5) and `zod`.
  */
@@ -97,8 +99,13 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
   const pageHeader = options.pageHeader ?? true;
   const onBeforeAction = options.onBeforeAction;
 
-  /** Take a fresh snapshot (refreshing refs) and format it for the model. */
-  const freshSnapshot = (): string => formatSnapshot(handle.snapshot().yaml, pageHeader);
+  /**
+   * Take a fresh snapshot (refreshing refs) and format it for the model.
+   * After an action the handle returns a diff against the previous snapshot
+   * (small, token-cheap); pass `full` for the complete tree.
+   */
+  const freshSnapshot = (full = false): string =>
+    formatSnapshot(handle.snapshot({ full }).yaml, pageHeader);
 
   const guard = async (action: ToolAction): Promise<void> => {
     if (onBeforeAction) await onBeforeAction(action);
@@ -109,7 +116,8 @@ export function createA11yTreeTools(options: A11yTreeToolsOptions = {}) {
       description:
         'Capture an accessibility snapshot of the current page. Better than a screenshot for understanding and acting on the page.',
       inputSchema: z.object({}),
-      execute: async () => ({ snapshot: freshSnapshot() }),
+      // An explicit snapshot request always returns the full page tree.
+      execute: async () => ({ snapshot: freshSnapshot(true) }),
     }),
 
     browser_click: tool({

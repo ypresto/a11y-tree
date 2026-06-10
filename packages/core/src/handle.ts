@@ -12,9 +12,26 @@ import { createRefStore } from './refs.js';
 import type { AccessibilitySnapshot, SnapshotOptions } from './snapshot.js';
 import * as ops from './operations.js';
 
+export interface HandleSnapshotOptions extends SnapshotOptions {
+  /**
+   * Render the complete tree instead of a diff against the previous snapshot.
+   * The handle diffs by default (it remembers the last snapshot it returned) so
+   * snapshots stay small across the agent loop; pass `full: true` to get the
+   * whole tree, e.g. when the consumer asks to see the entire page.
+   */
+  full?: boolean;
+}
+
 export interface A11yTreeHandle {
-  /** Take a fresh snapshot, refresh the ref store, and return it. */
-  snapshot(options?: SnapshotOptions): AccessibilitySnapshot;
+  /**
+   * Take a fresh snapshot, refresh the ref store, and return it.
+   *
+   * By default this diffs against the previous snapshot this handle returned
+   * (only changed subtrees, with `[unchanged]` placeholders). Pass
+   * `{ full: true }` for the complete tree, or `{ previous }` to diff against a
+   * specific snapshot.
+   */
+  snapshot(options?: HandleSnapshotOptions): AccessibilitySnapshot;
   /** Resolve a ref to a live element (re-snapshotting once on a miss). */
   resolve(ref: string): Element;
   click(ref: string, options?: ops.ClickOptions): void;
@@ -33,6 +50,10 @@ export interface A11yTreeHandle {
  */
 export function createA11yTreeHandle(root: Element = document.body): A11yTreeHandle {
   const store = createRefStore();
+  // The last snapshot returned to the caller — the diff baseline. Kept separate
+  // from the ref store's `current`, which also advances on internal
+  // re-snapshots (on a ref miss) that the caller never sees.
+  let previous: AccessibilitySnapshot | undefined;
 
   const resolve = (ref: string): Element => {
     let element = store.resolve(ref);
@@ -46,7 +67,14 @@ export function createA11yTreeHandle(root: Element = document.body): A11yTreeHan
 
   return {
     snapshot(options) {
-      return store.refresh(root, options);
+      const { full, previous: explicitPrevious, ...rest } = options ?? {};
+      const baseline = full ? undefined : (explicitPrevious ?? previous);
+      const snap = store.refresh(root, {
+        ...rest,
+        ...(baseline ? { previous: baseline } : {}),
+      });
+      previous = snap;
+      return snap;
     },
     resolve,
     click(ref, options) {

@@ -59,21 +59,44 @@ describe('createA11yTreeTools', () => {
     expect(result.snapshot).toMatch(/\[ref=e\d+\]/);
   });
 
-  it('browser_click clicks the referenced element and returns fresh state', async () => {
+  it('browser_click clicks the element and returns a diff of the result', async () => {
     document.body.innerHTML = `<button>Go</button>`;
     const button = document.querySelector('button')!;
     let clicks = 0;
-    button.addEventListener('click', () => clicks++);
+    button.addEventListener('click', () => {
+      clicks++;
+      const h = document.createElement('h2');
+      h.textContent = 'Done';
+      document.body.appendChild(h);
+    });
 
     const handle = createA11yTreeHandle();
     const tools = createA11yTreeTools({ handle });
-    const ref = refOf(handle.snapshot().elements, button);
+    const ref = refOf(handle.snapshot().elements, button); // full baseline
 
     const result = await call(tools.browser_click.execute, { element: 'Go button', ref });
 
     expect(clicks).toBe(1);
     expect(result.success).toBe(true);
-    expect(result.snapshot).toContain('button "Go"');
+    // Post-action snapshot is a diff: it shows the newly added heading, marked
+    // <changed>, and omits the unchanged button.
+    expect(result.snapshot).toContain('<changed>');
+    expect(result.snapshot).toContain('heading "Done"');
+    expect(result.snapshot).not.toContain('button "Go"');
+  });
+
+  it('browser_snapshot returns the full tree even after an action (not a diff)', async () => {
+    document.body.innerHTML = `<button>Go</button>`;
+    const button = document.querySelector('button')!;
+    const handle = createA11yTreeHandle();
+    const tools = createA11yTreeTools({ handle });
+    const ref = refOf(handle.snapshot().elements, button);
+
+    await call(tools.browser_click.execute, { element: 'Go button', ref }); // advances baseline
+    const snap = await call(tools.browser_snapshot.execute, {});
+
+    expect(snap.snapshot).toContain('button "Go"');
+    expect(snap.snapshot).not.toContain('<changed>');
   });
 
   it('browser_type types into the referenced input', async () => {

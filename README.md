@@ -32,7 +32,7 @@ script, a bundled web app, or any DOM environment.
 
 Organized as three independent layers plus the primary stateful handle.
 
-### 1. Accessibility tree — `snapshot`
+### Retrieve Accessibility tree — `snapshot`
 
 ```ts
 import { snapshot, pageSnapshot } from 'a11y-tree';
@@ -45,19 +45,6 @@ const { yaml, elements } = snapshot(document.body);
 
 // Or the full Playwright-MCP page snapshot (with URL/title header):
 const page = pageSnapshot();
-```
-
-### 2. Ref management — `createRefStore`
-
-Each interactable element gets a stable ref (`e3`). The ref store keeps the latest
-snapshot's `ref -> Element` map and resolves refs back to live elements.
-
-```ts
-import { createRefStore } from 'a11y-tree';
-
-const store = createRefStore();
-store.refresh();                 // take a snapshot, remember its refs
-const el = store.resolve('e3');  // -> the live <button>, or undefined
 ```
 
 ### 3. Operations — `click`, `type`, `fill`, …
@@ -94,12 +81,29 @@ await handle.type('e4', 'user@example.com');
 handle.fillForm([{ ref: 'e4', value: 'user@example.com' }]);
 ```
 
+**Incremental snapshots (diff by default).** The handle remembers the last snapshot
+it returned and, by default, the next `snapshot()` renders only what changed since
+then — changed subtrees marked `<changed>`, with everything stable dropped or
+collapsed to `- ref=eN [unchanged]`. This keeps each turn of an agent loop small.
+The `elements` map is always complete, so every ref still resolves even if the diff
+omits it. Pass `{ full: true }` for the whole tree, or `{ previous }` to diff against
+a specific snapshot.
+
+```ts
+const first = handle.snapshot();                // full tree (no previous yet)
+handle.click('e3');                             // ...page changes...
+const diff = handle.snapshot();                 // only the changed parts
+const whole = handle.snapshot({ full: true });  // force the full tree again
+```
+
 ## `@a11y-tree/ai-sdk` — Vercel AI SDK tools
 
 A ready-made tool set for an **in-browser conversation agent**, built on `a11y-tree`.
 The tools run on the page the user is already on (no server, no tabs, no `navigate`)
 and act on the live DOM. Tool names and schemas mirror Playwright-MCP so models
-recognize them, and every action returns the fresh page snapshot to drive the loop.
+recognize them, and every action returns the fresh page snapshot to drive the loop —
+as a diff against the previous one (only what changed), while `browser_snapshot`
+itself always returns the full tree.
 
 `ai` (v5) and `zod` are **peer dependencies** — your app provides them (it already
 uses the AI SDK).

@@ -8,7 +8,7 @@
  * Accessibility Object Model (AOM).
  */
 
-import { generateAriaTree, renderAriaTree } from './playwright/ariaSnapshot.js';
+import { generateAriaTree, renderAriaTree, type AriaSnapshot } from './playwright/ariaSnapshot.js';
 
 export type SnapshotMode = 'ai' | 'expect' | 'autoexpect' | 'codegen';
 
@@ -22,6 +22,14 @@ export interface SnapshotOptions {
   mode?: SnapshotMode;
   /** Prefix prepended to every ref (useful to namespace refs across frames). */
   refPrefix?: string;
+  /**
+   * Diff baseline. When set, `yaml` contains only the subtrees that changed
+   * since this snapshot, with `- ref=eN [unchanged]` placeholders for stable
+   * ones and a `<changed>` marker on each changed root (the Playwright-MCP
+   * incremental snapshot). The `elements` map is always complete, so every
+   * ref still resolves regardless of what the diff omits.
+   */
+  previous?: AccessibilitySnapshot;
 }
 
 export interface AccessibilitySnapshot {
@@ -39,6 +47,13 @@ export interface PageSnapshot extends AccessibilitySnapshot {
 }
 
 /**
+ * Each public snapshot carries its internal Playwright tree here (privately),
+ * so a later snapshot can be diffed against it via {@link SnapshotOptions.previous}
+ * without leaking the internal tree type into the public surface.
+ */
+const treeBySnapshot = new WeakMap<AccessibilitySnapshot, AriaSnapshot>();
+
+/**
  * Compute the accessibility tree for a DOM subtree.
  *
  * @param root Root element to snapshot. Defaults to `document.body`.
@@ -50,8 +65,11 @@ export function snapshot(
   const mode = options.mode ?? 'ai';
   const treeOptions = { mode, ...(options.refPrefix ? { refPrefix: options.refPrefix } : {}) };
   const aria = generateAriaTree(root, treeOptions);
-  const yaml = renderAriaTree(aria, treeOptions);
-  return { yaml, elements: aria.elements };
+  const previousTree = options.previous ? treeBySnapshot.get(options.previous) : undefined;
+  const yaml = renderAriaTree(aria, treeOptions, previousTree);
+  const result: AccessibilitySnapshot = { yaml, elements: aria.elements };
+  treeBySnapshot.set(result, aria);
+  return result;
 }
 
 /**
@@ -59,14 +77,18 @@ export function snapshot(
  * Playwright-MCP page header (`- Page URL:` / `- Page Title:` / `- Page Snapshot:`).
  */
 export function pageSnapshot(options: SnapshotOptions = {}): PageSnapshot {
-  const { yaml: tree, elements } = snapshot(document.body, options);
+  const inner = snapshot(document.body, options);
   const url = window.location.href;
   const title = document.title;
 
   const lines = [`- Page URL: ${url}`, `- Page Title: ${title}`, '- Page Snapshot:'];
-  for (const line of tree.split('\n')) {
+  for (const line of inner.yaml.split('\n')) {
     if (line.trim()) lines.push(`  ${line}`);
   }
 
-  return { yaml: lines.join('\n'), elements, url, title };
+  const result: PageSnapshot = { yaml: lines.join('\n'), elements: inner.elements, url, title };
+  // Re-key the inner tree onto the page snapshot so it can be a diff baseline.
+  const tree = treeBySnapshot.get(inner);
+  if (tree) treeBySnapshot.set(result, tree);
+  return result;
 }
